@@ -1,0 +1,484 @@
+DBMS: ASSIGNMENT 8
+MongoDB- Aggregation and Indexing
+
+Name: Kritika M. Chaudhari
+PRN:124B1F147
+Batch:A4
+
+Case Study: Employee Appraisal System
+
+test> use employee1
+switched to db employee1
+employee1> db.employee.insertMany([
+| { emp_id: 1, name: "ABC", salary: 10000, rating: 5 },
+| { emp_id: 2, name: "XYZ", salary: 15000, rating: 4 },
+| { emp_id: 3, name: "John", salary: 20000, rating: 3 },
+| { emp_id: 4, name: "Riya", salary: 18000, rating: 2 }
+| ])
+{
+  acknowledged: true,
+  insertedIds: {
+    '0': ObjectId('69dde76f4ccf9f1bcc3682d1'),
+    '1': ObjectId('69dde76f4ccf9f1bcc3682d2'),
+    '2': ObjectId('69dde76f4ccf9f1bcc3682d3'),
+    '3': ObjectId('69dde76f4ccf9f1bcc3682d4')
+  }
+}
+employee1> db.employee.find()
+[
+  {
+    _id: ObjectId('69dde6da2c018212563682d1'),
+    emp_id: 1,
+    name: 'ABC',
+    salary: 10000,
+    rating: 5
+  },
+  {
+    _id: ObjectId('69dde6da2c018212563682d2'),
+    emp_id: 2,
+    name: 'XYZ',
+    salary: 15000,
+    rating: 4
+  },
+  {
+    _id: ObjectId('69dde6da2c018212563682d3'),
+    emp_id: 3,
+    name: 'John',
+    salary: 20000,
+    rating: 3
+  },
+  {
+    _id: ObjectId('69dde6da2c018212563682d4'),
+    emp_id: 4,
+    name: 'Riya',
+    salary: 18000,
+    rating: 2
+  },
+  {
+    _id: ObjectId('69dde76f4ccf9f1bcc3682d1'),
+    emp_id: 1,
+    name: 'ABC',
+    salary: 10000,
+    rating: 5
+  },
+  {
+    _id: ObjectId('69dde76f4ccf9f1bcc3682d2'),
+    emp_id: 2,
+    name: 'XYZ',
+    salary: 15000,
+    rating: 4
+  },
+  {
+    _id: ObjectId('69dde76f4ccf9f1bcc3682d3'),
+    emp_id: 3,
+    name: 'John',
+    salary: 20000,
+    rating: 3
+  },
+  {
+    _id: ObjectId('69dde76f4ccf9f1bcc3682d4'),
+    emp_id: 4,
+    name: 'Riya',
+    salary: 18000,
+    rating: 2
+  }
+]
+employee1> db.employee.aggregate([
+| { $group: { _id: null, total_salary: { $sum: "$salary" } } }
+| ])
+[ { _id: null, total_salary: 126000 } ]
+employee1> db.employee.aggregate([
+| { $group: { _id: null, avg_salary: { $avg: "$salary" } } }
+| ])
+[ { _id: null, avg_salary: 15750 } ]
+employee1> db.employee.aggregate([
+| { $group: { _id: null, max_salary: { $max: "$salary" } } }
+| ])
+[ { _id: null, max_salary: 20000 } ]
+employee1> db.employee.aggregate([
+| { $group: { _id: "$rating", total_salary: { $sum: "$salary" } } }
+| ])
+[
+  { _id: 2, total_salary: 36000 },
+  { _id: 3, total_salary: 40000 },
+  { _id: 5, total_salary: 20000 },
+  { _id: 4, total_salary: 30000 }
+]
+employee1> db.employee.createIndex({ salary: 1 })
+salary_1
+employee1> db.employee.createIndex({ rating: -1 })
+rating_-1
+employee1> db.employee.getIndexes()
+[
+  { v: 2, key: { _id: 1 }, name: '_id_' },
+  { v: 2, key: { salary: 1 }, name: 'salary_1' },
+  { v: 2, key: { rating: -1 }, name: 'rating_-1' }
+]
+employee1>db.employee.aggregate([
+ { $match: { salary: { $gt: 15000 } } }
+])
+employee1>db.employee.aggregate([
+ { $sort: { salary: -1 } }
+])
+employee1>db.employee.aggregate([
+ {
+   $project: {
+     name: 1,
+     salary: 1,
+     category: {
+       $cond: { if: { $gte: ["$salary", 15000] }, then: "High", else: "Low" }
+     }
+   }
+ }
+])
+employee1>db.employee.createIndex(
+{ salary: 1, rating: -1 }
+)
+employee1>db.employee.createIndex(
+{ emp_id: 1 }, { unique: true }
+)
+employee1>db.department.insertMany([
+ { rating: 5, level: "Excellent" },
+ { rating: 4, level: "Good" }
+])
+
+employee1>db.employee.aggregate([
+ {
+   $lookup: {
+     from: "department",
+     localField: "rating",
+     foreignField: "rating",
+     as: "rating_info"
+   }
+ }
+])
+
+Project: Digital Tax Filing System
+
+test> use tax_portal
+switched to db tax_portal
+tax_portal> db.user_login.insertMany([
+| { user_id: 1, first_name: "Amit", last_name: "Sharma", username: "amit123", role: "taxpayer" },
+| { user_id: 2, first_name: "Neha", last_name: "Patil", username: "neha123", role: "taxpayer" },
+| { user_id: 3, first_name: "Raj", last_name: "Verma", username: "raj123", role: "taxpayer" },
+| { user_id: 4, first_name: "Simran", last_name: "Kaur", username: "simran123", role: "taxpayer" }
+| ])
+{
+  acknowledged: true,
+  insertedIds: {
+    '0': ObjectId('69dde8522d1058b9633682d1'),
+    '1': ObjectId('69dde8522d1058b9633682d2'),
+    '2': ObjectId('69dde8522d1058b9633682d3'),
+    '3': ObjectId('69dde8522d1058b9633682d4')
+  }
+}
+tax_portal> db.taxpayer_profile.insertMany([
+| { taxpayer_id: 1, user_id: 1, pan: "PAN001", city: "Pune" },
+| { taxpayer_id: 2, user_id: 2, pan: "PAN002", city: "Mumbai" },
+| { taxpayer_id: 3, user_id: 3, pan: "PAN003", city: "Delhi" },
+| { taxpayer_id: 4, user_id: 4, pan: "PAN004", city: "Chennai" }
+| ])
+{
+  acknowledged: true,
+  insertedIds: {
+    '0': ObjectId('69dde85a2d1058b9633682d5'),
+    '1': ObjectId('69dde85a2d1058b9633682d6'),
+    '2': ObjectId('69dde85a2d1058b9633682d7'),
+    '3': ObjectId('69dde85a2d1058b9633682d8')
+  }
+}
+tax_portal> db.income_sources.insertMany([
+| { taxpayer_id: 1, amount: 600000, year: "2024-25" },
+| { taxpayer_id: 2, amount: 300000, year: "2024-25" },
+| { taxpayer_id: 3, amount: 800000, year: "2024-25" },
+| { taxpayer_id: 4, amount: 200000, year: "2024-25" }
+| ])
+{
+  acknowledged: true,
+  insertedIds: {
+    '0': ObjectId('69dde8642d1058b9633682d9'),
+    '1': ObjectId('69dde8642d1058b9633682da'),
+    '2': ObjectId('69dde8642d1058b9633682db'),
+    '3': ObjectId('69dde8642d1058b9633682dc')
+  }
+}
+tax_portal> db.deductions.insertMany([
+| { taxpayer_id: 1, amount: 50000 },
+| { taxpayer_id: 2, amount: 20000 },
+| { taxpayer_id: 3, amount: 60000 },
+| { taxpayer_id: 4, amount: 10000 }
+| ])
+{
+  acknowledged: true,
+  insertedIds: {
+    '0': ObjectId('69dde86d2d1058b9633682dd'),
+    '1': ObjectId('69dde86d2d1058b9633682de'),
+    '2': ObjectId('69dde86d2d1058b9633682df'),
+    '3': ObjectId('69dde86d2d1058b9633682e0')
+  }
+}
+tax_portal> db.income_sources.find()
+[
+  {
+    _id: ObjectId('69dde431de63f5d1973682d9'),
+    taxpayer_id: 1,
+    amount: 610000
+  },
+  {
+    _id: ObjectId('69dde431de63f5d1973682da'),
+    taxpayer_id: 2,
+    amount: 300000
+  },
+  {
+    _id: ObjectId('69dde431de63f5d1973682db'),
+    taxpayer_id: 3,
+    amount: 810000
+  },
+  {
+    _id: ObjectId('69dde431de63f5d1973682dc'),
+    taxpayer_id: 4,
+    amount: 200000
+  },
+  {
+    _id: ObjectId('69dde8642d1058b9633682d9'),
+    taxpayer_id: 1,
+    amount: 600000,
+    year: '2024-25'
+  },
+  {
+    _id: ObjectId('69dde8642d1058b9633682da'),
+    taxpayer_id: 2,
+    amount: 300000,
+    year: '2024-25'
+  },
+  {
+    _id: ObjectId('69dde8642d1058b9633682db'),
+    taxpayer_id: 3,
+    amount: 800000,
+    year: '2024-25'
+  },
+  {
+    _id: ObjectId('69dde8642d1058b9633682dc'),
+    taxpayer_id: 4,
+    amount: 200000,
+    year: '2024-25'
+  }
+]
+tax_portal> db.income_sources.aggregate([
+| { $group: { _id: null, total_income: { $sum: "$amount" } } }
+| ])
+[ { _id: null, total_income: 3820000 } ]
+tax_portal> db.income_sources.aggregate([
+| { $group: { _id: null, avg_income: { $avg: "$amount" } } }
+| ])
+[ { _id: null, avg_income: 477500 } ]
+tax_portal> db.income_sources.aggregate([
+| { $group: { _id: "$taxpayer_id", total_income: { $sum: "$amount" } } },
+| { $match: { total_income: { $gt: 500000 } } },
+| { $project: { total_income: 1, tax: { $multiply: ["$total_income", 0.1] } } }
+| ])
+[
+  { _id: 3, total_income: 1610000, tax: 161000 },
+  { _id: 1, total_income: 1210000, tax: 121000 },
+  { _id: 2, total_income: 600000, tax: 60000 }
+]
+tax_portal> db.income_sources.aggregate([
+| { $group: { _id: "$taxpayer_id", total_income: { $sum: "$amount" } } }
+| ])
+[
+  { _id: 4, total_income: 400000 },
+  { _id: 3, total_income: 1610000 },
+  { _id: 1, total_income: 1210000 },
+  { _id: 2, total_income: 600000 }
+]
+tax_portal> db.taxpayer_profile.aggregate([
+| {
+|   $lookup: {
+|     from: "income_sources",
+|     localField: "taxpayer_id",
+|     foreignField: "taxpayer_id",
+|     as: "income_details"
+|   }
+| }
+| ])
+[
+  {
+    _id: ObjectId('69dde431de63f5d1973682d5'),
+    taxpayer_id: 1,
+    user_id: 1,
+    pan: 'PAN001',
+    city: 'Pune',
+    income_details: [
+      {
+        _id: ObjectId('69dde431de63f5d1973682d9'),
+        taxpayer_id: 1,
+        amount: 610000
+      },
+      {
+        _id: ObjectId('69dde8642d1058b9633682d9'),
+        taxpayer_id: 1,
+        amount: 600000,
+        year: '2024-25'
+      }
+    ]
+  },
+  {
+    _id: ObjectId('69dde431de63f5d1973682d6'),
+    taxpayer_id: 2,
+    user_id: 2,
+    pan: 'PAN002',
+    city: 'Mumbai',
+    income_details: [
+      {
+        _id: ObjectId('69dde431de63f5d1973682da'),
+        taxpayer_id: 2,
+        amount: 300000
+      },
+      {
+        _id: ObjectId('69dde8642d1058b9633682da'),
+        taxpayer_id: 2,
+        amount: 300000,
+        year: '2024-25'
+      }
+    ]
+  },
+  {
+    _id: ObjectId('69dde431de63f5d1973682d7'),
+    taxpayer_id: 3,
+    user_id: 3,
+    pan: 'PAN003',
+    city: 'Delhi',
+    income_details: [
+      {
+        _id: ObjectId('69dde431de63f5d1973682db'),
+        taxpayer_id: 3,
+        amount: 810000
+      },
+      {
+        _id: ObjectId('69dde8642d1058b9633682db'),
+        taxpayer_id: 3,
+        amount: 800000,
+        year: '2024-25'
+      }
+    ]
+  },
+  {
+    _id: ObjectId('69dde431de63f5d1973682d8'),
+    taxpayer_id: 4,
+    user_id: 4,
+    pan: 'PAN004',
+    city: 'Chennai',
+    income_details: [
+      {
+        _id: ObjectId('69dde431de63f5d1973682dc'),
+        taxpayer_id: 4,
+        amount: 200000
+      },
+      {
+        _id: ObjectId('69dde8642d1058b9633682dc'),
+        taxpayer_id: 4,
+        amount: 200000,
+        year: '2024-25'
+      }
+    ]
+  },
+  {
+    _id: ObjectId('69dde85a2d1058b9633682d5'),
+    taxpayer_id: 1,
+    user_id: 1,
+    pan: 'PAN001',
+    city: 'Pune',
+    income_details: [
+      {
+        _id: ObjectId('69dde431de63f5d1973682d9'),
+        taxpayer_id: 1,
+        amount: 610000
+      },
+      {
+        _id: ObjectId('69dde8642d1058b9633682d9'),
+        taxpayer_id: 1,
+        amount: 600000,
+        year: '2024-25'
+      }
+    ]
+  },
+  {
+    _id: ObjectId('69dde85a2d1058b9633682d6'),
+    taxpayer_id: 2,
+    user_id: 2,
+    pan: 'PAN002',
+    city: 'Mumbai',
+    income_details: [
+      {
+        _id: ObjectId('69dde431de63f5d1973682da'),
+        taxpayer_id: 2,
+        amount: 300000
+      },
+      {
+        _id: ObjectId('69dde8642d1058b9633682da'),
+        taxpayer_id: 2,
+        amount: 300000,
+        year: '2024-25'
+      }
+    ]
+  },
+  {
+    _id: ObjectId('69dde85a2d1058b9633682d7'),
+    taxpayer_id: 3,
+    user_id: 3,
+    pan: 'PAN003',
+    city: 'Delhi',
+    income_details: [
+      {
+        _id: ObjectId('69dde431de63f5d1973682db'),
+        taxpayer_id: 3,
+        amount: 810000
+      },
+      {
+        _id: ObjectId('69dde8642d1058b9633682db'),
+        taxpayer_id: 3,
+        amount: 800000,
+        year: '2024-25'
+      }
+    ]
+  },
+  {
+    _id: ObjectId('69dde85a2d1058b9633682d8'),
+    taxpayer_id: 4,
+    user_id: 4,
+    pan: 'PAN004',
+    city: 'Chennai',
+    income_details: [
+      {
+        _id: ObjectId('69dde431de63f5d1973682dc'),
+        taxpayer_id: 4,
+        amount: 200000
+      },
+      {
+        _id: ObjectId('69dde8642d1058b9633682dc'),
+        taxpayer_id: 4,
+        amount: 200000,
+        year: '2024-25'
+      }
+    ]
+  }
+]
+tax_portal> db.user_login.createIndex({ username: 1 })
+username_1
+tax_portal> db.income_sources.createIndex({ taxpayer_id: 1 })
+taxpayer_id_1
+tax_portal> db.income_sources.createIndex({ taxpayer_id: 1, year: 1 })
+taxpayer_id_1_year_1
+tax_portal> db.income_sources.getIndexes()
+[
+  { v: 2, key: { _id: 1 }, name: '_id_' },
+  { v: 2, key: { taxpayer_id: 1 }, name: 'taxpayer_id_1' },
+  {
+    v: 2,
+    key: { taxpayer_id: 1, year: 1 },
+    name: 'taxpayer_id_1_year_1'
+  }
+]
+tax_portal>
+
+
