@@ -1,0 +1,583 @@
+DBMS: ASSIGNMENT 7
+MongoDB- CRUD Operations
+
+Name: Kritika M. Chaudhari
+PRN:124B1F147
+Batch:A4
+
+Case Study: Employee Appraisal System
+
+test> use employeeAppraisal
+switched to db employeeAppraisal
+employeeAppraisal> db.employee.insertMany([
+| { Id: 1, Name: "ABC", Salary: 10000, Rating: 5, status: "active" },
+| { Id: 2, Name: "XYZ", Salary: 15000, Rating: 4, status: "active" },
+| { Id: 3, Name: "John", Salary: 20000, Rating: 3, status: "active" },
+| { Id: 4, Name: "Riya", Salary: 18000, Rating: 2, status: "inactive" }
+| ])
+{
+  acknowledged: true,
+  insertedIds: {
+    '0': ObjectId('69dde2bd31985b799a3682d1'),
+    '1': ObjectId('69dde2bd31985b799a3682d2'),
+    '2': ObjectId('69dde2bd31985b799a3682d3'),
+    '3': ObjectId('69dde2bd31985b799a3682d4')
+  }
+}
+employeeAppraisal> db.employee.find({ status: "active" })
+[
+  {
+    _id: ObjectId('69dde2bd31985b799a3682d1'),
+    Id: 1,
+    Name: 'ABC',
+    Salary: 10000,
+    Rating: 5,
+    status: 'active'
+  },
+  {
+    _id: ObjectId('69dde2bd31985b799a3682d2'),
+    Id: 2,
+    Name: 'XYZ',
+    Salary: 15000,
+    Rating: 4,
+    status: 'active'
+  },
+  {
+    _id: ObjectId('69dde2bd31985b799a3682d3'),
+    Id: 3,
+    Name: 'John',
+    Salary: 20000,
+    Rating: 3,
+    status: 'active'
+  }
+]
+employeeAppraisal> db.employee.findOne({ Name: "ABC" })
+{
+  _id: ObjectId('69dde2bd31985b799a3682d1'),
+  Id: 1,
+  Name: 'ABC',
+  Salary: 10000,
+  Rating: 5,
+  status: 'active'
+}
+employeeAppraisal> db.employee.find({ Rating: 5, status: "active" })
+[
+  {
+    _id: ObjectId('69dde2bd31985b799a3682d1'),
+    Id: 1,
+    Name: 'ABC',
+    Salary: 10000,
+    Rating: 5,
+    status: 'active'
+  }
+]
+employeeAppraisal> db.employee.find({
+|   $or: [
+|     { Rating: 5 },
+|     { Salary: { $gt: 18000 } }
+|   ]
+| })
+[
+  {
+    _id: ObjectId('69dde2bd31985b799a3682d1'),
+    Id: 1,
+    Name: 'ABC',
+    Salary: 10000,
+    Rating: 5,
+    status: 'active'
+  },
+  {
+    _id: ObjectId('69dde2bd31985b799a3682d3'),
+    Id: 3,
+    Name: 'John',
+    Salary: 20000,
+    Rating: 3,
+    status: 'active'
+  }
+]
+employeeAppraisal> db.employee.find({ status: { $ne: "inactive" } })
+[
+  {
+    _id: ObjectId('69dde2bd31985b799a3682d1'),
+    Id: 1,
+    Name: 'ABC',
+    Salary: 10000,
+    Rating: 5,
+    status: 'active'
+  },
+  {
+    _id: ObjectId('69dde2bd31985b799a3682d2'),
+    Id: 2,
+    Name: 'XYZ',
+    Salary: 15000,
+    Rating: 4,
+    status: 'active'
+  },
+  {
+    _id: ObjectId('69dde2bd31985b799a3682d3'),
+    Id: 3,
+    Name: 'John',
+    Salary: 20000,
+    Rating: 3,
+    status: 'active'
+  }
+]
+employeeAppraisal> db.employee.find({ Salary: { $gt: 15000 } })
+[
+  {
+    _id: ObjectId('69dde2bd31985b799a3682d3'),
+    Id: 3,
+    Name: 'John',
+    Salary: 20000,
+    Rating: 3,
+    status: 'active'
+  },
+  {
+    _id: ObjectId('69dde2bd31985b799a3682d4'),
+    Id: 4,
+    Name: 'Riya',
+    Salary: 18000,
+    Rating: 2,
+    status: 'inactive'
+  }
+]
+employeeAppraisal> db.employee.updateOne(
+|   { Rating: 5 },
+|   { $set: { Salary: 20000 } }
+| )
+{
+  acknowledged: true,
+  insertedId: null,
+  matchedCount: 1,
+  modifiedCount: 1,
+  upsertedCount: 0
+}
+employeeAppraisal> db.employee.updateMany(
+|   { Rating: { $gte: 4 } },
+|   { $inc: { Salary: 5000 } }
+| )
+{
+  acknowledged: true,
+  insertedId: null,
+  matchedCount: 2,
+  modifiedCount: 2,
+  upsertedCount: 0
+}
+employeeAppraisal> db.employee.deleteOne({ Id: 4 })
+{ acknowledged: true, deletedCount: 1 }
+employeeAppraisal> db.employee.find().sort({ Salary: -1 })
+[
+  {
+    _id: ObjectId('69dde2bd31985b799a3682d1'),
+    Id: 1,
+    Name: 'ABC',
+    Salary: 25000,
+    Rating: 5,
+    status: 'active'
+  },
+  {
+    _id: ObjectId('69dde2bd31985b799a3682d2'),
+    Id: 2,
+    Name: 'XYZ',
+    Salary: 20000,
+    Rating: 4,
+    status: 'active'
+  },
+  {
+    _id: ObjectId('69dde2bd31985b799a3682d3'),
+    Id: 3,
+    Name: 'John',
+    Salary: 20000,
+    Rating: 3,
+    status: 'active'
+  }
+]
+employeeAppraisal> db.employee.find().limit(2)
+[
+  {
+    _id: ObjectId('69dde2bd31985b799a3682d1'),
+    Id: 1,
+    Name: 'ABC',
+    Salary: 25000,
+    Rating: 5,
+    status: 'active'
+  },
+  {
+    _id: ObjectId('69dde2bd31985b799a3682d2'),
+    Id: 2,
+    Name: 'XYZ',
+    Salary: 20000,
+    Rating: 4,
+    status: 'active'
+  }
+]
+employeeAppraisal> db.employee.save({
+|   Id: 5,
+|   Name: "Aman",
+|   Salary: 25000,
+|   Rating: 4,
+|   status: "active"
+| })
+TypeError: db.employee.save is not a function
+employeeAppraisal> db.employee.aggregate([
+|   {
+|     $group: {
+|       _id: null,
+|       totalSalary: { $sum: "$Salary" }
+|     }
+|   }
+| ])
+[ { _id: null, totalSalary: 65000 } ]
+employeeAppraisal>
+
+Project: Digital Tax Filing System
+
+test> use tax_portal
+switched to db tax_portal
+tax_portal> db.user_login.insertMany([
+| { user_id: 1, first_name: "Amit", last_name: "Sharma", role: "taxpayer", status: "active" },
+| { user_id: 2, first_name: "Neha", last_name: "Patil", role: "taxpayer", status: "active" },
+| { user_id: 3, first_name: "Raj", last_name: "Verma", role: "taxpayer", status: "active" },
+| { user_id: 4, first_name: "Simran", last_name: "Kaur", role: "taxpayer", status: "inactive" }
+| ])
+|
+| db.taxpayer_profile.insertMany([
+| { taxpayer_id: 1, user_id: 1, pan: "PAN001", city: "Pune" },
+| { taxpayer_id: 2, user_id: 2, pan: "PAN002", city: "Mumbai" },
+| { taxpayer_id: 3, user_id: 3, pan: "PAN003", city: "Delhi" },
+| { taxpayer_id: 4, user_id: 4, pan: "PAN004", city: "Chennai" }
+| ])
+|
+| db.income_sources.insertMany([
+| { taxpayer_id: 1, amount: 600000 },
+| { taxpayer_id: 2, amount: 300000 },
+| { taxpayer_id: 3, amount: 800000 },
+| { taxpayer_id: 4, amount: 200000 }
+| ])
+|
+| db.deductions.insertMany([
+| { taxpayer_id: 1, amount: 50000 },
+| { taxpayer_id: 2, amount: 20000 },
+| { taxpayer_id: 3, amount: 60000 },
+| { taxpayer_id: 4, amount: 10000 }
+| ])
+{
+  acknowledged: true,
+  insertedIds: {
+    '0': ObjectId('69dde431de63f5d1973682dd'),
+    '1': ObjectId('69dde431de63f5d1973682de'),
+    '2': ObjectId('69dde431de63f5d1973682df'),
+    '3': ObjectId('69dde431de63f5d1973682e0')
+  }
+}
+tax_portal> db.user_login.find({ status: "active" })
+[
+  {
+    _id: ObjectId('69dde431de63f5d1973682d1'),
+    user_id: 1,
+    first_name: 'Amit',
+    last_name: 'Sharma',
+    role: 'taxpayer',
+    status: 'active'
+  },
+  {
+    _id: ObjectId('69dde431de63f5d1973682d2'),
+    user_id: 2,
+    first_name: 'Neha',
+    last_name: 'Patil',
+    role: 'taxpayer',
+    status: 'active'
+  },
+  {
+    _id: ObjectId('69dde431de63f5d1973682d3'),
+    user_id: 3,
+    first_name: 'Raj',
+    last_name: 'Verma',
+    role: 'taxpayer',
+    status: 'active'
+  }
+]
+tax_portal> db.user_login.findOne({ first_name: "Amit" })
+{
+  _id: ObjectId('69dde431de63f5d1973682d1'),
+  user_id: 1,
+  first_name: 'Amit',
+  last_name: 'Sharma',
+  role: 'taxpayer',
+  status: 'active'
+}
+tax_portal> db.user_login.find({ role: "taxpayer", status: "active" })
+[
+  {
+    _id: ObjectId('69dde431de63f5d1973682d1'),
+    user_id: 1,
+    first_name: 'Amit',
+    last_name: 'Sharma',
+    role: 'taxpayer',
+    status: 'active'
+  },
+  {
+    _id: ObjectId('69dde431de63f5d1973682d2'),
+    user_id: 2,
+    first_name: 'Neha',
+    last_name: 'Patil',
+    role: 'taxpayer',
+    status: 'active'
+  },
+  {
+    _id: ObjectId('69dde431de63f5d1973682d3'),
+    user_id: 3,
+    first_name: 'Raj',
+    last_name: 'Verma',
+    role: 'taxpayer',
+    status: 'active'
+  }
+]
+tax_portal> db.user_login.find({
+|   $or: [
+|     { first_name: "Amit" },
+|     { status: "inactive" }
+|   ]
+| })
+[
+  {
+    _id: ObjectId('69dde431de63f5d1973682d1'),
+    user_id: 1,
+    first_name: 'Amit',
+    last_name: 'Sharma',
+    role: 'taxpayer',
+    status: 'active'
+  },
+  {
+    _id: ObjectId('69dde431de63f5d1973682d4'),
+    user_id: 4,
+    first_name: 'Simran',
+    last_name: 'Kaur',
+    role: 'taxpayer',
+    status: 'inactive'
+  }
+]
+tax_portal> db.user_login.find({ status: { $ne: "inactive" } })
+[
+  {
+    _id: ObjectId('69dde431de63f5d1973682d1'),
+    user_id: 1,
+    first_name: 'Amit',
+    last_name: 'Sharma',
+    role: 'taxpayer',
+    status: 'active'
+  },
+  {
+    _id: ObjectId('69dde431de63f5d1973682d2'),
+    user_id: 2,
+    first_name: 'Neha',
+    last_name: 'Patil',
+    role: 'taxpayer',
+    status: 'active'
+  },
+  {
+    _id: ObjectId('69dde431de63f5d1973682d3'),
+    user_id: 3,
+    first_name: 'Raj',
+    last_name: 'Verma',
+    role: 'taxpayer',
+    status: 'active'
+  }
+]
+tax_portal> db.income_sources.find({ amount: { $gt: 500000 } })
+[
+  {
+    _id: ObjectId('69dde431de63f5d1973682d9'),
+    taxpayer_id: 1,
+    amount: 600000
+  },
+  {
+    _id: ObjectId('69dde431de63f5d1973682db'),
+    taxpayer_id: 3,
+    amount: 800000
+  }
+]
+tax_portal> db.user_login.updateOne(
+|   { user_id: 4 },
+|   { $set: { status: "active" } }
+| )
+{
+  acknowledged: true,
+  insertedId: null,
+  matchedCount: 1,
+  modifiedCount: 1,
+  upsertedCount: 0
+}
+tax_portal> db.income_sources.updateMany(
+|   { amount: { $gt: 500000 } },
+|   { $inc: { amount: 10000 } }
+| )
+{
+  acknowledged: true,
+  insertedId: null,
+  matchedCount: 2,
+  modifiedCount: 2,
+  upsertedCount: 0
+}
+tax_portal> db.deductions.deleteOne({ taxpayer_id: 4 })
+{ acknowledged: true, deletedCount: 1 }
+tax_portal> db.user_login.save({
+|   user_id: 5,
+|   first_name: "Karan",
+|   last_name: "Mehta",
+|   role: "taxpayer",
+|   status: "active"
+| })
+TypeError: db.user_login.save is not a function
+tax_portal> db.income_sources.find().sort({ amount: -1 })
+[
+  {
+    _id: ObjectId('69dde431de63f5d1973682db'),
+    taxpayer_id: 3,
+    amount: 810000
+  },
+  {
+    _id: ObjectId('69dde431de63f5d1973682d9'),
+    taxpayer_id: 1,
+    amount: 610000
+  },
+  {
+    _id: ObjectId('69dde431de63f5d1973682da'),
+    taxpayer_id: 2,
+    amount: 300000
+  },
+  {
+    _id: ObjectId('69dde431de63f5d1973682dc'),
+    taxpayer_id: 4,
+    amount: 200000
+  }
+]
+tax_portal> db.income_sources.find().limit(2)
+[
+  {
+    _id: ObjectId('69dde431de63f5d1973682d9'),
+    taxpayer_id: 1,
+    amount: 610000
+  },
+  {
+    _id: ObjectId('69dde431de63f5d1973682da'),
+    taxpayer_id: 2,
+    amount: 300000
+  }
+]
+tax_portal> db.income_sources.find().skip(1).limit(2)
+[
+  {
+    _id: ObjectId('69dde431de63f5d1973682da'),
+    taxpayer_id: 2,
+    amount: 300000
+  },
+  {
+    _id: ObjectId('69dde431de63f5d1973682db'),
+    taxpayer_id: 3,
+    amount: 810000
+  }
+]
+tax_portal> db.user_login.aggregate([
+|   {
+|     $lookup: {
+|       from: "taxpayer_profile",
+|       localField: "user_id",
+|       foreignField: "user_id",
+|       as: "profile"
+|     }
+|   }
+| ])
+[
+  {
+    _id: ObjectId('69dde431de63f5d1973682d1'),
+    user_id: 1,
+    first_name: 'Amit',
+    last_name: 'Sharma',
+    role: 'taxpayer',
+    status: 'active',
+    profile: [
+      {
+        _id: ObjectId('69dde431de63f5d1973682d5'),
+        taxpayer_id: 1,
+        user_id: 1,
+        pan: 'PAN001',
+        city: 'Pune'
+      }
+    ]
+  },
+  {
+    _id: ObjectId('69dde431de63f5d1973682d2'),
+    user_id: 2,
+    first_name: 'Neha',
+    last_name: 'Patil',
+    role: 'taxpayer',
+    status: 'active',
+    profile: [
+      {
+        _id: ObjectId('69dde431de63f5d1973682d6'),
+        taxpayer_id: 2,
+        user_id: 2,
+        pan: 'PAN002',
+        city: 'Mumbai'
+      }
+    ]
+  },
+  {
+    _id: ObjectId('69dde431de63f5d1973682d3'),
+    user_id: 3,
+    first_name: 'Raj',
+    last_name: 'Verma',
+    role: 'taxpayer',
+    status: 'active',
+    profile: [
+      {
+        _id: ObjectId('69dde431de63f5d1973682d7'),
+        taxpayer_id: 3,
+        user_id: 3,
+        pan: 'PAN003',
+        city: 'Delhi'
+      }
+    ]
+  },
+  {
+    _id: ObjectId('69dde431de63f5d1973682d4'),
+    user_id: 4,
+    first_name: 'Simran',
+    last_name: 'Kaur',
+    role: 'taxpayer',
+    status: 'active',
+    profile: [
+      {
+        _id: ObjectId('69dde431de63f5d1973682d8'),
+        taxpayer_id: 4,
+        user_id: 4,
+        pan: 'PAN004',
+        city: 'Chennai'
+      }
+    ]
+  }
+]
+tax_portal> db.income_sources.aggregate([
+|   {
+|     $group: {
+|       _id: "$taxpayer_id",
+|       total_income: { $sum: "$amount" }
+|     }
+|   },
+|   {
+|     $match: { total_income: { $gt: 500000 } }
+|   },
+|   {
+|     $project: {
+|       total_income: 1,
+|       tax: { $multiply: ["$total_income", 0.10] }
+|     }
+|   }
+| ])
+[
+  { _id: 3, total_income: 810000, tax: 81000 },
+  { _id: 1, total_income: 610000, tax: 61000 }
+]
+tax_portal>
+
