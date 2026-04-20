@@ -1,0 +1,492 @@
+mysql> USE EmployeeAppraisal;
+Database changed
+mysql> CREATE TABLE Employee (
+    ->     Id INT PRIMARY KEY,
+    ->     Name VARCHAR(50),
+    ->     Salary INT,
+    ->     Rating INT
+    -> );
+Query OK, 0 rows affected (0.04 sec)
+
+mysql> CREATE TABLE appraisal_log (
+    ->     log_id INT AUTO_INCREMENT PRIMARY KEY,
+    ->     Id INT,
+    ->     Action VARCHAR(20),
+    ->     old_salary INT,
+    ->     new_salary INT,
+    ->     log_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    -> );
+Query OK, 0 rows affected (0.03 sec)
+
+mysql> INSERT INTO Employee VALUES
+    -> (1, 'ABC', 10000, 5),
+    -> (2, 'XYZ', 15000, 4);
+Query OK, 2 rows affected (0.02 sec)
+Records: 2  Duplicates: 0  Warnings: 0
+
+mysql> DELIMITER $$
+mysql>
+mysql> CREATE PROCEDURE AddEmployee(
+    ->     IN p_id INT,
+    ->     IN p_name VARCHAR(50),
+    ->     IN p_salary INT,
+    ->     IN p_rating INT
+    -> )
+    -> BEGIN
+    ->     INSERT INTO Employee(Id, Name, Salary, Rating)
+    ->     VALUES(p_id, p_name, p_salary, p_rating);
+    -> END $$
+ERROR 1304 (42000): PROCEDURE AddEmployee already exists
+mysql>
+mysql> DELIMITER ;
+mysql> CALL AddEmployee(3, 'John', 20000, 5);
+Query OK, 1 row affected (0.01 sec)
+
+mysql> DELIMITER $$
+mysql>
+mysql> CREATE PROCEDURE UpdateSalary(
+    ->     IN p_id INT,
+    ->     IN new_salary INT
+    -> )
+    -> BEGIN
+    ->     UPDATE Employee
+    ->     SET Salary = new_salary
+    ->     WHERE Id = p_id;
+    -> END $$
+Query OK, 0 rows affected (0.01 sec)
+
+mysql>
+mysql> DELIMITER ;
+mysql> CALL UpdateSalary(1, 25000);
+Query OK, 1 row affected (0.01 sec)
+
+mysql> DELIMITER $$
+mysql>
+mysql> CREATE PROCEDURE UpdateRating(
+    ->     IN p_id INT,
+    ->     IN new_rating INT
+    -> )
+    -> BEGIN
+    ->     UPDATE Employee
+    ->     SET Rating = new_rating
+    ->     WHERE Id = p_id;
+    -> END $$
+Query OK, 0 rows affected (0.01 sec)
+
+mysql>
+mysql> DELIMITER ;
+mysql> CALL UpdateRating(2, 5);
+Query OK, 1 row affected (0.01 sec)
+
+mysql> DELIMITER $$
+mysql>
+mysql> CREATE PROCEDURE DeleteEmployee(
+    ->     IN p_id INT
+    -> )
+    -> BEGIN
+    ->     DELETE FROM Employee
+    ->     WHERE Id = p_id;
+    -> END $$
+Query OK, 0 rows affected (0.01 sec)
+
+mysql>
+mysql> DELIMITER ;
+mysql> CALL DeleteEmployee(2);
+Query OK, 1 row affected (0.01 sec)
+
+mysql> DELIMITER $$
+mysql>
+mysql> CREATE PROCEDURE ShowEmployees()
+    -> BEGIN
+    ->     SELECT * FROM Employee;
+    -> END $$
+Query OK, 0 rows affected (0.01 sec)
+
+mysql>
+mysql> DELIMITER ;
+mysql> CALL ShowEmployees();
++----+------+--------+--------+
+| Id | Name | Salary | Rating |
++----+------+--------+--------+
+|  1 | ABC  |  25000 |      5 |
+|  3 | John |  20000 |      5 |
++----+------+--------+--------+
+2 rows in set (0.01 sec)
+
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> DELIMITER $$
+mysql>
+mysql> CREATE FUNCTION GetSalary(p_id INT)
+    -> RETURNS INT
+    -> DETERMINISTIC
+    -> BEGIN
+    ->     DECLARE sal INT;
+    ->
+    ->     SELECT Salary INTO sal
+    ->     FROM Employee
+    ->     WHERE Id = p_id;
+    ->
+    ->     RETURN sal;
+    -> END $$
+Query OK, 0 rows affected (0.01 sec)
+
+mysql>
+mysql> DELIMITER ;
+mysql> SELECT GetSalary(1);
++--------------+
+| GetSalary(1) |
++--------------+
+|        25000 |
++--------------+
+1 row in set (0.01 sec)
+
+mysql> DELIMITER $$
+mysql>
+mysql> CREATE FUNCTION GetRating(p_id INT)
+    -> RETURNS INT
+    -> DETERMINISTIC
+    -> BEGIN
+    ->     DECLARE rate INT;
+    ->
+    ->     SELECT Rating INTO rate
+    ->     FROM Employee
+    ->     WHERE Id = p_id;
+    ->
+    ->     RETURN rate;
+    -> END $$
+Query OK, 0 rows affected (0.01 sec)
+
+mysql>
+mysql> DELIMITER ;
+mysql> SELECT GetRating(1);
++--------------+
+| GetRating(1) |
++--------------+
+|            5 |
++--------------+
+1 row in set (0.00 sec)
+
+mysql> DELIMITER $$
+mysql>
+mysql> CREATE FUNCTION CalculateBonus(p_id INT)
+    -> RETURNS INT
+    -> DETERMINISTIC
+    -> BEGIN
+    ->     DECLARE sal INT;
+    ->     DECLARE rate INT;
+    ->     DECLARE bonus INT;
+    ->
+    ->     SELECT Salary, Rating INTO sal, rate
+    ->     FROM Employee
+    ->     WHERE Id = p_id;
+    ->
+    ->     IF rate = 5 THEN
+    ->         SET bonus = sal * 0.20;
+    ->     ELSEIF rate = 4 THEN
+    ->         SET bonus = sal * 0.10;
+    ->     ELSE
+    ->         SET bonus = sal * 0.05;
+    ->     END IF;
+    ->
+    ->     RETURN bonus;
+    -> END $$
+Query OK, 0 rows affected (0.01 sec)
+
+mysql>
+mysql> DELIMITER ;
+mysql> DELIMITER $$
+mysql>
+mysql> CREATE FUNCTION TotalEmployees()
+    -> RETURNS INT
+    -> DETERMINISTIC
+    -> BEGIN
+    ->     DECLARE total INT;
+    ->
+    ->     SELECT COUNT(*) INTO total
+    ->     FROM Employee;
+    ->
+    ->     RETURN total;
+    -> END $$
+Query OK, 0 rows affected (0.01 sec)
+
+mysql>
+mysql> DELIMITER ;
+mysql> SELECT TotalEmployees();
++------------------+
+| TotalEmployees() |
++------------------+
+|                2 |
++------------------+
+1 row in set (0.01 sec)
+
+mysql> INSERT INTO Employee VALUES
+    -> (4, 'Riya', 18000, 4),
+    -> (5, 'Aman', 22000, 5),
+    -> (6, 'Neha', 17000, 3),
+    -> (7, 'Karan', 30000, 5);
+Query OK, 4 rows affected (0.02 sec)
+Records: 4  Duplicates: 0  Warnings: 0
+
+mysql> SELECT * FROM Employee;
++----+-------+--------+--------+
+| Id | Name  | Salary | Rating |
++----+-------+--------+--------+
+|  1 | ABC   |  25000 |      5 |
+|  3 | John  |  20000 |      5 |
+|  4 | Riya  |  18000 |      4 |
+|  5 | Aman  |  22000 |      5 |
+|  6 | Neha  |  17000 |      3 |
+|  7 | Karan |  30000 |      5 |
++----+-------+--------+--------+
+6 rows in set (0.01 sec)
+
+mysql> DELIMITER $$
+mysql>
+mysql> CREATE PROCEDURE GetTotalSalary()
+    -> BEGIN
+    ->     SELECT SUM(Salary) AS Total_Salary
+    ->     FROM Employee;
+    -> END $$
+Query OK, 0 rows affected (0.01 sec)
+
+mysql>
+mysql> DELIMITER ;
+mysql> CALL GetTotalSalary();
++--------------+
+| Total_Salary |
++--------------+
+|       132000 |
++--------------+
+1 row in set (0.01 sec)
+
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> SELECT Total_Salary();
+ERROR 1305 (42000): FUNCTION employeeappraisal.Total_Salary does not exist
+mysql> SELECT Total_Salary;
+ERROR 1054 (42S22): Unknown column 'Total_Salary' in 'field list'
+mysql> DELIMITER $$
+mysql> CREATE PROCEDURE GetTotalSalary1()
+    -> BEGIN
+    -> DECLARE Total_sal INT;
+    -> Total_sal=SELECT SUM(Salary) FROM EMPLOYEE;
+    -> END $$
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '=SELECT SUM(Salary) FROM EMPLOYEE;
+END' at line 4
+
+mysql> DELIMITER $$
+mysql>
+mysql> CREATE PROCEDURE GetTotalSalary1()
+    -> BEGIN
+    ->     DECLARE Total_sal INT;
+    ->
+    ->     SELECT SUM(Salary) INTO Total_sal
+    ->     FROM EMPLOYEE;
+    ->
+    ->     SELECT Total_sal;
+    -> END $$
+Query OK, 0 rows affected (0.01 sec)
+
+mysql>
+mysql> DELIMITER ;
+mysql> CALL GetTotalSalary1();
++-----------+
+| Total_sal |
++-----------+
+|    132000 |
++-----------+
+1 row in set (0.00 sec)
+
+Query OK, 0 rows affected (0.01 sec)
+
+mysql>
+
+
+Project: Digital Tax Filing System
+
+mysql> CREATE DATABASE SmartTaxSystem;
+Query OK, 1 row affected (0.12 sec)
+
+mysql> USE SmartTaxSystem;
+Database changed
+mysql> -- 1. user_login
+mysql> CREATE TABLE user_login (
+    ->     user_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    ->     first_name VARCHAR(100) NOT NULL,
+    ->     last_name VARCHAR(100) NOT NULL,
+    ->     username VARCHAR(100) UNIQUE NOT NULL,
+    ->     password_hash VARCHAR(255) NOT NULL,
+    ->     role ENUM('admin','taxpayer') NOT NULL,
+    ->     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    ->     failed_attempts INT DEFAULT 0,
+    ->     locked_until TIMESTAMP NULL
+    -> );
+Query OK, 0 rows affected (0.16 sec)
+
+mysql>
+mysql> -- 2. taxpayer_profile
+mysql> CREATE TABLE taxpayer_profile (
+    ->     taxpayer_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    ->     user_id BIGINT UNSIGNED UNIQUE,
+    ->     pan_number VARCHAR(10) UNIQUE NOT NULL,
+    ->     aadhaar CHAR(12),
+    ->     dob DATE,
+    ->     email VARCHAR(255),
+    ->     phone VARCHAR(20),
+    ->     address VARCHAR(255),
+    ->     city VARCHAR(100),
+    ->     state VARCHAR(100),
+    ->     pin CHAR(6),
+    ->     FOREIGN KEY (user_id) REFERENCES user_login(user_id)
+    ->     ON DELETE CASCADE ON UPDATE CASCADE
+    -> );
+Query OK, 0 rows affected (0.07 sec)
+
+mysql>
+mysql> -- 3. income_sources
+mysql> CREATE TABLE income_sources (
+    ->     income_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    ->     taxpayer_id BIGINT UNSIGNED,
+    ->     source_type VARCHAR(100),
+    ->     amount DECIMAL(15,2) DEFAULT 0.00,
+    ->     financial_year VARCHAR(10),
+    ->     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    ->     FOREIGN KEY (taxpayer_id) REFERENCES taxpayer_profile(taxpayer_id)
+    ->     ON DELETE CASCADE ON UPDATE CASCADE
+    -> );
+Query OK, 0 rows affected (0.04 sec)
+
+mysql>
+mysql> -- 4. deductions
+mysql> CREATE TABLE deductions (
+    ->     deduction_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    ->     taxpayer_id BIGINT UNSIGNED,
+    ->     deduction_type VARCHAR(100),
+    ->     amount DECIMAL(15,2) DEFAULT 0.00,
+    ->     financial_year VARCHAR(10),
+    ->     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    ->     FOREIGN KEY (taxpayer_id) REFERENCES taxpayer_profile(taxpayer_id)
+    ->     ON DELETE CASCADE ON UPDATE CASCADE
+    -> );
+Query OK, 0 rows affected (0.04 sec)
+
+mysql>
+mysql> -- 5. tax_returns
+mysql> CREATE TABLE tax_returns (
+    ->     return_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    ->     taxpayer_id BIGINT UNSIGNED,
+    ->     financial_year VARCHAR(10),
+    ->     regime ENUM('old','new'),
+    ->     gross_income DECIMAL(15,2) DEFAULT 0.00,
+    ->     total_deductions DECIMAL(15,2) DEFAULT 0.00,
+    ->     taxable_income DECIMAL(15,2) DEFAULT 0.00,
+    ->     tax_liability DECIMAL(15,2) DEFAULT 0.00,
+    ->     status ENUM('PENDING','APPROVED','REJECTED','UNDER_REVIEW') DEFAULT 'PENDING',
+    ->     filed_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    ->     FOREIGN KEY (taxpayer_id) REFERENCES taxpayer_profile(taxpayer_id)
+    ->     ON DELETE CASCADE ON UPDATE CASCADE
+    -> );
+Query OK, 0 rows affected (0.05 sec)
+
+mysql>
+mysql> -- 6. refund_status
+mysql> CREATE TABLE refund_status (
+    ->     refund_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    ->     return_id BIGINT UNSIGNED UNIQUE,
+    ->     refund_amount DECIMAL(15,2) DEFAULT 0.00,
+    ->     status ENUM('NOT_INITIATED','UNDER_REVIEW','PROCESSED','PAID','HOLD','REJECTED') DEFAULT 'NOT_INITIATED',
+    ->     remarks VARCHAR(500),
+    ->     last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    ->     FOREIGN KEY (return_id) REFERENCES tax_returns(return_id)
+    ->     ON DELETE CASCADE ON UPDATE CASCADE
+    -> );
+Query OK, 0 rows affected (0.05 sec)
+
+mysql>
+mysql> -- 7. audit_logs
+mysql> CREATE TABLE audit_logs (
+    ->     log_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    ->     user_id BIGINT UNSIGNED,
+    ->     email VARCHAR(255),
+    ->     action VARCHAR(100),
+    ->     status VARCHAR(30),
+    ->     details VARCHAR(1000),
+    ->     ip_address VARCHAR(64),
+    ->     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    ->     FOREIGN KEY (user_id) REFERENCES user_login(user_id)
+    ->     ON DELETE SET NULL ON UPDATE CASCADE
+    -> );
+Query OK, 0 rows affected (0.04 sec)
+
+mysql> DELIMITER $$
+mysql>
+mysql> CREATE PROCEDURE AddUser(
+    ->     IN fname VARCHAR(100),
+    ->     IN lname VARCHAR(100),
+    ->     IN uname VARCHAR(100),
+    ->     IN pass VARCHAR(255),
+    ->     IN role_type VARCHAR(20)
+    -> )
+    -> BEGIN
+    ->     INSERT INTO user_login(first_name, last_name, username, password_hash, role)
+    ->     VALUES(fname, lname, uname, pass, role_type);
+    -> END $$
+Query OK, 0 rows affected (0.03 sec)
+
+mysql>
+mysql> DELIMITER ;
+mysql> DELIMITER $$
+mysql>
+mysql> CREATE PROCEDURE GetTaxReturns()
+    -> BEGIN
+    ->     SELECT * FROM tax_returns;
+    -> END $$
+Query OK, 0 rows affected (0.01 sec)
+
+mysql>
+mysql> DELIMITER ;
+mysql> DELIMITER $$
+mysql>
+mysql> CREATE FUNCTION GetTotalIncome(t_id BIGINT)
+    -> RETURNS DECIMAL(15,2)
+    -> DETERMINISTIC
+    -> BEGIN
+    ->     DECLARE total DECIMAL(15,2);
+    ->
+    ->     SELECT SUM(amount) INTO total
+    ->     FROM income_sources
+    ->     WHERE taxpayer_id = t_id;
+    ->
+    ->     RETURN IFNULL(total,0);
+    -> END $$
+Query OK, 0 rows affected (0.02 sec)
+
+mysql>
+mysql> DELIMITER ;
+mysql> DELIMITER $$
+mysql>
+mysql> CREATE FUNCTION CalculateTaxableIncome(t_id BIGINT)
+    -> RETURNS DECIMAL(15,2)
+    -> DETERMINISTIC
+    -> BEGIN
+    ->     DECLARE income DECIMAL(15,2);
+    ->     DECLARE deduction DECIMAL(15,2);
+    ->
+    ->     SELECT SUM(amount) INTO income
+    ->     FROM income_sources
+    ->     WHERE taxpayer_id = t_id;
+    ->
+    ->     SELECT SUM(amount) INTO deduction
+    ->     FROM deductions
+    ->     WHERE taxpayer_id = t_id;
+    ->
+    ->     RETURN IFNULL(income,0) - IFNULL(deduction,0);
+    -> END $$
+Query OK, 0 rows affected (0.01 sec)
+
+mysql>
+mysql> DELIMITER ;
+mysql>
+
+
