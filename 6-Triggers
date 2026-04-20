@@ -1,0 +1,309 @@
+Case Study: Employee Appraisal System
+
+mysql> USE EmployeeAppraisalSystem;
+Database changed
+mysql> CREATE TABLE Employee (
+    ->     Id INT PRIMARY KEY,
+    ->     Name VARCHAR(50),
+    ->     Salary INT,
+    ->     Rating INT
+    -> );
+Query OK, 0 rows affected (0.04 sec)
+
+mysql>
+mysql> CREATE TABLE appraisal_log (
+    ->     log_id INT AUTO_INCREMENT PRIMARY KEY,
+    ->     Id INT,
+    ->     Action VARCHAR(20),
+    ->     old_salary INT,
+    ->     new_salary INT,
+    ->     log_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    -> );
+Query OK, 0 rows affected (0.03 sec)
+
+mysql> INSERT INTO Employee VALUES
+    -> (1, 'ABC', 10000, 5),
+    -> (2, 'XYZ', 15000, 4),
+    -> (3, 'John', 20000, 3),
+    -> (4, 'Riya', 18000, 2);
+Query OK, 4 rows affected (0.01 sec)
+Records: 4  Duplicates: 0  Warnings: 0
+
+mysql> SELECT * FROM Employee;
++----+------+--------+--------+
+| Id | Name | Salary | Rating |
++----+------+--------+--------+
+|  1 | ABC  |  10000 |      5 |
+|  2 | XYZ  |  15000 |      4 |
+|  3 | John |  20000 |      3 |
+|  4 | Riya |  18000 |      2 |
++----+------+--------+--------+
+4 rows in set (0.00 sec)
+
+mysql> DELIMITER $$
+mysql>
+mysql> CREATE TRIGGER trg_after_insert_employee
+    -> AFTER INSERT ON Employee
+    -> FOR EACH ROW
+    -> BEGIN
+    ->     INSERT INTO appraisal_log(Id, Action, old_salary, new_salary)
+    ->     VALUES (NEW.Id, 'INSERT', NULL, NEW.Salary);
+    -> END$$
+Query OK, 0 rows affected (0.01 sec)
+
+mysql>
+mysql> DELIMITER ;
+mysql> DELIMITER $$
+mysql>
+mysql> CREATE TRIGGER trg_after_update_employee
+    -> AFTER UPDATE ON Employee
+    -> FOR EACH ROW
+    -> BEGIN
+    ->     INSERT INTO appraisal_log(Id, Action, old_salary, new_salary)
+    ->     VALUES (OLD.Id, 'UPDATE', OLD.Salary, NEW.Salary);
+    -> END$$
+Query OK, 0 rows affected (0.02 sec)
+
+mysql>
+mysql> DELIMITER ;
+mysql> DELIMITER $$
+mysql>
+mysql> CREATE TRIGGER trg_after_delete_employee
+    -> AFTER DELETE ON Employee
+    -> FOR EACH ROW
+    -> BEGIN
+    ->     INSERT INTO appraisal_log(Id, Action, old_salary, new_salary)
+    ->     VALUES (OLD.Id, 'DELETE', OLD.Salary, NULL);
+    -> END$$
+Query OK, 0 rows affected (0.01 sec)
+
+mysql>
+mysql> DELIMITER ;
+mysql> INSERT INTO Employee VALUES (5, 'Aman', 25000, 4);
+Query OK, 1 row affected (0.01 sec)
+
+mysql> SELECT * FROM Employee;
++----+------+--------+--------+
+| Id | Name | Salary | Rating |
++----+------+--------+--------+
+|  1 | ABC  |  10000 |      5 |
+|  2 | XYZ  |  15000 |      4 |
+|  3 | John |  20000 |      3 |
+|  4 | Riya |  18000 |      2 |
+|  5 | Aman |  25000 |      4 |
++----+------+--------+--------+
+5 rows in set (0.00 sec)
+
+mysql> SELECT * FROM appraisal_log;
++--------+------+--------+------------+------------+---------------------+
+| log_id | Id   | Action | old_salary | new_salary | log_date            |
++--------+------+--------+------------+------------+---------------------+
+|      1 |    5 | INSERT |       NULL |      25000 | 2026-04-14 11:53:58 |
++--------+------+--------+------------+------------+---------------------+
+1 row in set (0.00 sec)
+
+mysql> UPDATE Employee
+    -> SET Salary = 30000
+    -> WHERE Id = 1;
+Query OK, 1 row affected (0.01 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+mysql> SELECT * FROM Employee;
++----+------+--------+--------+
+| Id | Name | Salary | Rating |
++----+------+--------+--------+
+|  1 | ABC  |  30000 |      5 |
+|  2 | XYZ  |  15000 |      4 |
+|  3 | John |  20000 |      3 |
+|  4 | Riya |  18000 |      2 |
+|  5 | Aman |  25000 |      4 |
++----+------+--------+--------+
+5 rows in set (0.00 sec)
+
+mysql> SELECT * FROM appraisal_log;
++--------+------+--------+------------+------------+---------------------+
+| log_id | Id   | Action | old_salary | new_salary | log_date            |
++--------+------+--------+------------+------------+---------------------+
+|      1 |    5 | INSERT |       NULL |      25000 | 2026-04-14 11:53:58 |
+|      2 |    1 | UPDATE |      10000 |      30000 | 2026-04-14 11:54:16 |
++--------+------+--------+------------+------------+---------------------+
+2 rows in set (0.00 sec)
+
+mysql> DELETE FROM Employee WHERE Id = 2;
+Query OK, 1 row affected (0.01 sec)
+
+mysql> SELECT * FROM Employee;
++----+------+--------+--------+
+| Id | Name | Salary | Rating |
++----+------+--------+--------+
+|  1 | ABC  |  30000 |      5 |
+|  3 | John |  20000 |      3 |
+|  4 | Riya |  18000 |      2 |
+|  5 | Aman |  25000 |      4 |
++----+------+--------+--------+
+4 rows in set (0.00 sec)
+
+mysql> SELECT * FROM appraisal_log;
++--------+------+--------+------------+------------+---------------------+
+| log_id | Id   | Action | old_salary | new_salary | log_date            |
++--------+------+--------+------------+------------+---------------------+
+|      1 |    5 | INSERT |       NULL |      25000 | 2026-04-14 11:53:58 |
+|      2 |    1 | UPDATE |      10000 |      30000 | 2026-04-14 11:54:16 |
+|      3 |    2 | DELETE |      15000 |       NULL | 2026-04-14 11:54:31 |
++--------+------+--------+------------+------------+---------------------+
+3 rows in set (0.00 sec)
+
+
+Project: Digital Tax Filing System
+
+mysql> use smarttaxsystem;
+Database changed
+mysql> -- user_login
+mysql> CREATE TABLE user_login (
+    ->     user_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    ->     first_name VARCHAR(100),
+    ->     last_name VARCHAR(100),
+    ->     username VARCHAR(100),
+    ->     role VARCHAR(20)
+    -> );
+Query OK, 0 rows affected (0.04 sec)
+
+mysql>
+mysql> -- taxpayer_profile
+mysql> CREATE TABLE taxpayer_profile (
+    ->     taxpayer_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    ->     user_id BIGINT,
+    ->     pan_number VARCHAR(10),
+    ->     city VARCHAR(50)
+    -> );
+Query OK, 0 rows affected (0.04 sec)
+
+mysql>
+mysql> -- income_sources
+mysql> CREATE TABLE income_sources (
+    ->     income_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    ->     taxpayer_id BIGINT,
+    ->     source_type VARCHAR(50),
+    ->     amount DECIMAL(10,2)
+    -> );
+Query OK, 0 rows affected (0.04 sec)
+
+mysql>
+mysql> -- audit_logs (VERY IMPORTANT FOR TRIGGERS)
+mysql> CREATE TABLE audit_logs (
+    ->     log_id INT AUTO_INCREMENT PRIMARY KEY,
+    ->     user_id BIGINT,
+    ->     action VARCHAR(50),
+    ->     old_value VARCHAR(100),
+    ->     new_value VARCHAR(100),
+    ->     log_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    -> );
+Query OK, 0 rows affected (0.03 sec)
+
+mysql> INSERT INTO user_login VALUES
+    -> (1,'Amit','Sharma','amit123','taxpayer'),
+    -> (2,'Neha','Patil','neha123','taxpayer');
+Query OK, 2 rows affected (0.01 sec)
+Records: 2  Duplicates: 0  Warnings: 0
+
+mysql>
+mysql> INSERT INTO taxpayer_profile VALUES
+    -> (1,1,'PAN001','Pune'),
+    -> (2,2,'PAN002','Mumbai');
+Query OK, 2 rows affected (0.01 sec)
+Records: 2  Duplicates: 0  Warnings: 0
+
+mysql>
+mysql> INSERT INTO income_sources VALUES
+    -> (1,1,'Salary',600000),
+    -> (2,2,'Business',300000);
+Query OK, 2 rows affected (0.01 sec)
+Records: 2  Duplicates: 0  Warnings: 0
+
+mysql> DELIMITER $$
+mysql>
+mysql> CREATE TRIGGER trg_income_insert
+    -> AFTER INSERT ON income_sources
+    -> FOR EACH ROW
+    -> BEGIN
+    ->     INSERT INTO audit_logs(user_id, action, old_value, new_value)
+    ->     VALUES (NEW.taxpayer_id, 'INSERT', NULL, NEW.amount);
+    -> END$$
+Query OK, 0 rows affected (0.01 sec)
+
+mysql>
+mysql> DELIMITER ;
+mysql> DELIMITER $$
+mysql>
+mysql> CREATE TRIGGER trg_income_update
+    -> AFTER UPDATE ON income_sources
+    -> FOR EACH ROW
+    -> BEGIN
+    ->     INSERT INTO audit_logs(user_id, action, old_value, new_value)
+    ->     VALUES (OLD.taxpayer_id, 'UPDATE', OLD.amount, NEW.amount);
+    -> END$$
+Query OK, 0 rows affected (0.02 sec)
+
+mysql>
+mysql> DELIMITER ;
+mysql> DELIMITER $$
+mysql>
+mysql> CREATE TRIGGER trg_income_delete
+    -> AFTER DELETE ON income_sources
+    -> FOR EACH ROW
+    -> BEGIN
+    ->     INSERT INTO audit_logs(user_id, action, old_value, new_value)
+    ->     VALUES (OLD.taxpayer_id, 'DELETE', OLD.amount, NULL);
+    -> END$$
+Query OK, 0 rows affected (0.01 sec)
+
+mysql>
+mysql> DELIMITER ;
+mysql> SELECT * FROM income_sources;
++-----------+-------------+-------------+-----------+
+| income_id | taxpayer_id | source_type | amount    |
++-----------+-------------+-------------+-----------+
+|         1 |           1 | Salary      | 600000.00 |
+|         2 |           2 | Business    | 300000.00 |
++-----------+-------------+-------------+-----------+
+2 rows in set (0.00 sec)
+
+mysql> INSERT INTO income_sources VALUES (3,1,'Freelance',200000);
+Query OK, 1 row affected (0.01 sec)
+
+mysql> SELECT * FROM audit_logs;
++--------+---------+--------+-----------+-----------+---------------------+
+| log_id | user_id | action | old_value | new_value | log_time            |
++--------+---------+--------+-----------+-----------+---------------------+
+|      1 |       1 | INSERT | NULL      | 200000.00 | 2026-04-14 12:00:09 |
++--------+---------+--------+-----------+-----------+---------------------+
+1 row in set (0.00 sec)
+
+mysql> UPDATE income_sources
+    -> SET amount = 700000
+    -> WHERE income_id = 1;
+Query OK, 1 row affected (0.01 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+mysql> SELECT * FROM audit_logs;
++--------+---------+--------+-----------+-----------+---------------------+
+| log_id | user_id | action | old_value | new_value | log_time            |
++--------+---------+--------+-----------+-----------+---------------------+
+|      1 |       1 | INSERT | NULL      | 200000.00 | 2026-04-14 12:00:09 |
+|      2 |       1 | UPDATE | 600000.00 | 700000.00 | 2026-04-14 12:00:18 |
++--------+---------+--------+-----------+-----------+---------------------+
+2 rows in set (0.00 sec)
+
+mysql> DELETE FROM income_sources
+    -> WHERE income_id = 2;
+Query OK, 1 row affected (0.02 sec)
+
+mysql> SELECT * FROM audit_logs;
++--------+---------+--------+-----------+-----------+---------------------+
+| log_id | user_id | action | old_value | new_value | log_time            |
++--------+---------+--------+-----------+-----------+---------------------+
+|      1 |       1 | INSERT | NULL      | 200000.00 | 2026-04-14 12:00:09 |
+|      2 |       1 | UPDATE | 600000.00 | 700000.00 | 2026-04-14 12:00:18 |
+|      3 |       2 | DELETE | 300000.00 | NULL      | 2026-04-14 12:00:26 |
++--------+---------+--------+-----------+-----------+---------------------+
+3 rows in set (0.00 sec)
