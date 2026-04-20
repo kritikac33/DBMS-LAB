@@ -1,0 +1,337 @@
+mysql> CREATE DATABASE EMP_APPRAISAL_FINAL;
+Query OK, 1 row affected (0.01 sec)
+
+mysql>
+mysql> USE EMP_APPRAISAL_FINAL;
+Database changed
+mysql> CREATE TABLE Employee_Data (
+    ->     emp_id INT PRIMARY KEY,
+    ->     first_name VARCHAR(50),
+    ->     middle_name VARCHAR(50),
+    ->     last_name VARCHAR(50),
+    ->     gender CHAR(1),
+    ->     phone VARCHAR(15),
+    ->     email VARCHAR(100),
+    ->     address VARCHAR(150)
+    -> );
+Query OK, 0 rows affected (0.02 sec)
+
+mysql>
+mysql> CREATE TABLE Department (
+    ->     dept_id INT PRIMARY KEY,
+    ->     dept_name VARCHAR(50),
+    ->     designation VARCHAR(50),
+    ->     position VARCHAR(50)
+    -> );
+Query OK, 0 rows affected (0.01 sec)
+
+mysql>
+mysql> CREATE TABLE Skills (
+    ->     skill_id INT PRIMARY KEY,
+    ->     skill_name VARCHAR(50),
+    ->     skill_type VARCHAR(50)
+    -> );
+Query OK, 0 rows affected (0.01 sec)
+
+mysql>
+mysql> CREATE TABLE Projects (
+    ->     project_id INT PRIMARY KEY,
+    ->     project_name VARCHAR(100),
+    ->     hours_allocated INT,
+    ->     project_rating INT
+    -> );
+Query OK, 0 rows affected (0.01 sec)
+
+mysql>
+mysql> CREATE TABLE Appraisal (
+    ->     appraisal_id INT PRIMARY KEY,
+    ->     emp_id INT,
+    ->     final_score INT,
+    ->     manager_rating INT,
+    ->     self_rating INT,
+    ->     overall_rating INT,
+    ->     comments VARCHAR(200),
+    ->     FOREIGN KEY (emp_id) REFERENCES Employee_Data(emp_id)
+    -> );
+Query OK, 0 rows affected (0.01 sec)
+
+mysql>
+mysql> CREATE TABLE Feedback (
+    ->     feedback_id INT PRIMARY KEY,
+    ->     appraisal_id INT,
+    ->     feedback_type VARCHAR(50),
+    ->     feedback_rating INT,
+    ->     feedback_date DATE,
+    ->     visibility VARCHAR(20),
+    ->     FOREIGN KEY (appraisal_id) REFERENCES Appraisal(appraisal_id)
+    -> );
+Query OK, 0 rows affected (0.01 sec)
+
+mysql>
+mysql> CREATE TABLE Employee_Skills (
+    ->     emp_id INT,
+    ->     skill_id INT,
+    ->     proficiency VARCHAR(20),
+    ->     years_of_experience INT,
+    ->     certification_status VARCHAR(20),
+    ->     PRIMARY KEY (emp_id, skill_id),
+    ->     FOREIGN KEY (emp_id) REFERENCES Employee_Data(emp_id),
+    ->     FOREIGN KEY (skill_id) REFERENCES Skills(skill_id)
+    -> );
+Query OK, 0 rows affected (0.01 sec)
+
+mysql>
+mysql> CREATE TABLE Works_In (
+    ->     emp_id INT,
+    ->     dept_id INT,
+    ->     PRIMARY KEY (emp_id, dept_id),
+    ->     FOREIGN KEY (emp_id) REFERENCES Employee_Data(emp_id),
+    ->     FOREIGN KEY (dept_id) REFERENCES Department(dept_id)
+    -> );
+Query OK, 0 rows affected (0.01 sec)
+
+mysql>
+mysql> CREATE TABLE Works_On (
+    ->     emp_id INT,
+    ->     project_id INT,
+    ->     role_in_project VARCHAR(50),
+    ->     contribution_score INT,
+    ->     PRIMARY KEY (emp_id, project_id),
+    ->     FOREIGN KEY (emp_id) REFERENCES Employee_Data(emp_id),
+    ->     FOREIGN KEY (project_id) REFERENCES Projects(project_id)
+    -> );
+Query OK, 0 rows affected (0.03 sec)
+
+mysql> INSERT INTO Employee_Data VALUES
+    -> (101,'Amit','K','Sharma','M','9876543210','amit@gmail.com','Mumbai'),
+    -> (102,'Neha','R','Verma','F','9876543211','neha@gmail.com','Pune'),
+    -> (103,'Rahul','S','Patil','M','9876543212','rahul@gmail.com','Delhi'),
+    -> (104,'Sneha','M','Iyer','F','9876543213','sneha@gmail.com','Chennai'),
+    -> (105,'Riya','T','Kapoor','F','9876543214','riya@gmail.com','Mumbai');
+Query OK, 5 rows affected (0.01 sec)
+Records: 5  Duplicates: 0  Warnings: 0
+
+mysql>
+mysql> INSERT INTO Department VALUES
+    -> (1,'HR','Manager','Senior'),
+    -> (2,'IT','Developer','Mid'),
+    -> (3,'Finance','Analyst','Junior');
+Query OK, 3 rows affected (0.00 sec)
+Records: 3  Duplicates: 0  Warnings: 0
+
+mysql>
+mysql> INSERT INTO Appraisal VALUES
+    -> (1,101,85,9,8,9,'Excellent'),
+    -> (2,102,78,8,7,8,'Good'),
+    -> (3,103,70,7,7,7,'Average');
+Query OK, 3 rows affected (0.01 sec)
+Records: 3  Duplicates: 0  Warnings: 0
+
+mysql> ALTER TABLE Employee_Data
+    -> MODIFY gender CHAR(1) CHECK (gender IN ('M','F'));
+Query OK, 5 rows affected (0.04 sec)
+Records: 5  Duplicates: 0  Warnings: 0
+
+mysql>
+mysql> DESC Employee_Data;
++-------------+--------------+------+-----+---------+-------+
+| Field       | Type         | Null | Key | Default | Extra |
++-------------+--------------+------+-----+---------+-------+
+| emp_id      | int          | NO   | PRI | NULL    |       |
+| first_name  | varchar(50)  | YES  |     | NULL    |       |
+| middle_name | varchar(50)  | YES  |     | NULL    |       |
+| last_name   | varchar(50)  | YES  |     | NULL    |       |
+| gender      | char(1)      | YES  |     | NULL    |       |
+| phone       | varchar(15)  | YES  |     | NULL    |       |
+| email       | varchar(100) | YES  |     | NULL    |       |
+| address     | varchar(150) | YES  |     | NULL    |       |
++-------------+--------------+------+-----+---------+-------+
+8 rows in set (0.01 sec)
+
+mysql> ALTER TABLE Department
+    -> MODIFY dept_name VARCHAR(100) NOT NULL UNIQUE;
+Query OK, 3 rows affected (0.04 sec)
+Records: 3  Duplicates: 0  Warnings: 0
+
+mysql>
+mysql> DESC Department;
++-------------+--------------+------+-----+---------+-------+
+| Field       | Type         | Null | Key | Default | Extra |
++-------------+--------------+------+-----+---------+-------+
+| dept_id     | int          | NO   | PRI | NULL    |       |
+| dept_name   | varchar(100) | NO   | UNI | NULL    |       |
+| designation | varchar(50)  | YES  |     | NULL    |       |
+| position    | varchar(50)  | YES  |     | NULL    |       |
++-------------+--------------+------+-----+---------+-------+
+4 rows in set (0.00 sec)
+
+mysql> ALTER TABLE Appraisal
+    -> ADD rating VARCHAR(20) DEFAULT 'Pending';
+Query OK, 0 rows affected (0.02 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql>
+mysql> SELECT * FROM Appraisal;
++--------------+--------+-------------+----------------+-------------+----------------+-----------+---------+
+| appraisal_id | emp_id | final_score | manager_rating | self_rating | overall_rating | comments  | rating  |
++--------------+--------+-------------+----------------+-------------+----------------+-----------+---------+
+|            1 |    101 |          85 |              9 |           8 |              9 | Excellent | Pending |
+|            2 |    102 |          78 |              8 |           7 |              8 | Good      | Pending |
+|            3 |    103 |          70 |              7 |           7 |              7 | Average   | Pending |
++--------------+--------+-------------+----------------+-------------+----------------+-----------+---------+
+3 rows in set (0.00 sec)
+
+mysql> ALTER TABLE Appraisal
+    -> ADD appraisal_year INT CHECK (appraisal_year BETWEEN 2020 AND 2030);
+Query OK, 3 rows affected (0.05 sec)
+Records: 3  Duplicates: 0  Warnings: 0
+
+mysql>
+mysql> DESC Appraisal;
++----------------+--------------+------+-----+---------+-------+
+| Field          | Type         | Null | Key | Default | Extra |
++----------------+--------------+------+-----+---------+-------+
+| appraisal_id   | int          | NO   | PRI | NULL    |       |
+| emp_id         | int          | YES  | MUL | NULL    |       |
+| final_score    | int          | YES  |     | NULL    |       |
+| manager_rating | int          | YES  |     | NULL    |       |
+| self_rating    | int          | YES  |     | NULL    |       |
+| overall_rating | int          | YES  |     | NULL    |       |
+| comments       | varchar(200) | YES  |     | NULL    |       |
+| rating         | varchar(20)  | YES  |     | Pending |       |
+| appraisal_year | int          | YES  |     | NULL    |       |
++----------------+--------------+------+-----+---------+-------+
+9 rows in set (0.00 sec)
+
+mysql> ALTER TABLE Department ADD contact_no VARCHAR(15);
+Query OK, 0 rows affected (0.03 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql>
+mysql> DESC Department;
++-------------+--------------+------+-----+---------+-------+
+| Field       | Type         | Null | Key | Default | Extra |
++-------------+--------------+------+-----+---------+-------+
+| dept_id     | int          | NO   | PRI | NULL    |       |
+| dept_name   | varchar(100) | NO   | UNI | NULL    |       |
+| designation | varchar(50)  | YES  |     | NULL    |       |
+| position    | varchar(50)  | YES  |     | NULL    |       |
+| contact_no  | varchar(15)  | YES  |     | NULL    |       |
++-------------+--------------+------+-----+---------+-------+
+5 rows in set (0.00 sec)
+
+mysql> ALTER TABLE Department DROP contact_no;
+Query OK, 0 rows affected (0.03 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql>
+mysql> DESC Department;
++-------------+--------------+------+-----+---------+-------+
+| Field       | Type         | Null | Key | Default | Extra |
++-------------+--------------+------+-----+---------+-------+
+| dept_id     | int          | NO   | PRI | NULL    |       |
+| dept_name   | varchar(100) | NO   | UNI | NULL    |       |
+| designation | varchar(50)  | YES  |     | NULL    |       |
+| position    | varchar(50)  | YES  |     | NULL    |       |
++-------------+--------------+------+-----+---------+-------+
+4 rows in set (0.00 sec)
+
+mysql> ALTER TABLE Department RENAME COLUMN dept_name TO dname;
+Query OK, 0 rows affected (0.03 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql>
+mysql> DESC Department;
++-------------+--------------+------+-----+---------+-------+
+| Field       | Type         | Null | Key | Default | Extra |
++-------------+--------------+------+-----+---------+-------+
+| dept_id     | int          | NO   | PRI | NULL    |       |
+| dname       | varchar(100) | NO   | UNI | NULL    |       |
+| designation | varchar(50)  | YES  |     | NULL    |       |
+| position    | varchar(50)  | YES  |     | NULL    |       |
++-------------+--------------+------+-----+---------+-------+
+4 rows in set (0.00 sec)
+
+mysql> RENAME TABLE Department TO Dept;
+Query OK, 0 rows affected (0.02 sec)
+
+mysql>
+mysql> SHOW TABLES;
++-------------------------------+
+| Tables_in_emp_appraisal_final |
++-------------------------------+
+| appraisal                     |
+| dept                          |
+| employee_data                 |
+| employee_skills               |
+| feedback                      |
+| projects                      |
+| skills                        |
+| works_in                      |
+| works_on                      |
++-------------------------------+
+9 rows in set (0.00 sec)
+
+mysql> SET FOREIGN_KEY_CHECKS = 0;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql>
+mysql> TRUNCATE TABLE Employee_Data;
+Query OK, 0 rows affected (0.02 sec)
+
+mysql>
+mysql> SELECT COUNT(*) FROM Employee_Data;
++----------+
+| COUNT(*) |
++----------+
+|        0 |
++----------+
+1 row in set (0.00 sec)
+
+mysql>
+mysql> SET FOREIGN_KEY_CHECKS = 1;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> INSERT INTO Employee_Data VALUES
+    -> (101,'Amit','K','Sharma','M','9876543210','amit@gmail.com','Mumbai')
+    -> ON DUPLICATE KEY UPDATE address = 'Updated City';
+Query OK, 1 row affected (0.01 sec)
+
+mysql>
+mysql> SELECT emp_id, address FROM Employee_Data;
++--------+---------+
+| emp_id | address |
++--------+---------+
+|    101 | Mumbai  |
++--------+---------+
+1 row in set (0.00 sec)
+
+mysql> SELECT * FROM Appraisal
+    -> WHERE final_score BETWEEN 70 AND 90;
++--------------+--------+-------------+----------------+-------------+----------------+-----------+---------+----------------+
+| appraisal_id | emp_id | final_score | manager_rating | self_rating | overall_rating | comments  | rating  | appraisal_year |
++--------------+--------+-------------+----------------+-------------+----------------+-----------+---------+----------------+
+|            1 |    101 |          85 |              9 |           8 |              9 | Excellent | Pending |           NULL |
+|            2 |    102 |          78 |              8 |           7 |              8 | Good      | Pending |           NULL |
+|            3 |    103 |          70 |              7 |           7 |              7 | Average   | Pending |           NULL |
++--------------+--------+-------------+----------------+-------------+----------------+-----------+---------+----------------+
+3 rows in set (0.00 sec)
+
+mysql> UPDATE Appraisal
+    -> SET final_score = final_score + 5
+    -> WHERE final_score < 80 OR manager_rating < 7;
+Query OK, 2 rows affected (0.01 sec)
+Rows matched: 2  Changed: 2  Warnings: 0
+
+mysql>
+mysql> SELECT appraisal_id, final_score FROM Appraisal;
++--------------+-------------+
+| appraisal_id | final_score |
++--------------+-------------+
+|            1 |          85 |
+|            2 |          83 |
+|            3 |          75 |
++--------------+-------------+
+3 rows in set (0.00 sec)
+
+mysql>
