@@ -1,0 +1,249 @@
+Case Study: Employee Appraisal System
+
+mysql> USE EmployeeAppraisalSystem;
+Database changed
+mysql> CREATE TABLE Employee (
+    ->     Id INT PRIMARY KEY,
+    ->     Name VARCHAR(50),
+    ->     Salary INT,
+    ->     Rating INT
+    -> );
+Query OK, 0 rows affected (0.03 sec)
+
+mysql> CREATE TABLE appraisal_log (
+    ->     log_id INT AUTO_INCREMENT PRIMARY KEY,
+    ->     Id INT,
+    ->     Action VARCHAR(20),
+    ->     old_salary INT,
+    ->     new_salary INT,
+    ->     log_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    -> );
+Query OK, 0 rows affected (0.03 sec)
+
+mysql> INSERT INTO Employee VALUES
+    -> (1, 'ABC', 10000, 5),
+    -> (2, 'XYZ', 15000, 4),
+    -> (3, 'John', 20000, 3),
+    -> (4, 'Riya', 18000, 2);
+Query OK, 4 rows affected (0.02 sec)
+Records: 4  Duplicates: 0  Warnings: 0
+
+mysql> DELIMITER $$
+mysql>
+mysql> CREATE PROCEDURE Appraisal_With_Exception()
+    -> BEGIN
+    ->     DECLARE done INT DEFAULT 0;
+    ->     DECLARE v_id INT;
+    ->     DECLARE v_salary INT;
+    ->     DECLARE v_rating INT;
+    ->     DECLARE v_bonus VARCHAR(30);
+    ->
+    ->     -- Cursor
+    ->     DECLARE emp_cursor CURSOR FOR
+    ->         SELECT Id, Salary, Rating FROM Employee;
+    ->
+    ->     -- Handlers
+    ->     DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
+    ->
+    ->     DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    ->     BEGIN
+    ->         SELECT 'Error occurred during appraisal process' AS Message;
+    ->     END;
+    ->
+    ->     OPEN emp_cursor;
+    ->
+    ->     read_loop: LOOP
+    ->         FETCH emp_cursor INTO v_id, v_salary, v_rating;
+    ->
+    ->         IF done = 1 THEN
+    ->             LEAVE read_loop;
+    ->         END IF;
+    ->
+    ->         -- Control Structure
+    ->         IF v_rating = 5 THEN
+    ->             SET v_salary = v_salary + 10000;
+    ->             SET v_bonus = 'Excellent';
+    ->
+    ->         ELSEIF v_rating = 4 THEN
+    ->             SET v_salary = v_salary + 5000;
+    ->             SET v_bonus = 'Good';
+    ->
+    ->         ELSEIF v_rating = 3 THEN
+    ->             SET v_salary = v_salary + 2000;
+    ->             SET v_bonus = 'Average';
+    ->
+    ->         ELSE
+    ->             SET v_bonus = 'Needs Improvement';
+    ->         END IF;
+    ->
+    ->         -- Update Employee
+    ->         UPDATE Employee
+    ->         SET Salary = v_salary
+    ->         WHERE Id = v_id;
+    ->
+    ->         -- Insert into log table
+    ->         INSERT INTO appraisal_log(Id, Action, old_salary, new_salary)
+    ->         VALUES (v_id, v_bonus, v_salary - 0, v_salary);
+    ->
+    ->     END LOOP;
+    ->
+    ->     CLOSE emp_cursor;
+    -> END$$
+Query OK, 0 rows affected (0.01 sec)
+
+mysql>
+mysql> DELIMITER ;
+mysql> CALL Appraisal_With_Exception();
+Query OK, 0 rows affected (0.03 sec)
+
+mysql> SELECT * FROM Employee;
++----+------+--------+--------+
+| Id | Name | Salary | Rating |
++----+------+--------+--------+
+|  1 | ABC  |  20000 |      5 |
+|  2 | XYZ  |  20000 |      4 |
+|  3 | John |  22000 |      3 |
+|  4 | Riya |  18000 |      2 |
++----+------+--------+--------+
+4 rows in set (0.00 sec)
+
+mysql> SELECT * FROM appraisal_log;
++--------+------+-------------------+------------+------------+---------------------+
+| log_id | Id   | Action            | old_salary | new_salary | log_date            |
++--------+------+-------------------+------------+------------+---------------------+
+|      1 |    1 | Excellent         |      20000 |      20000 | 2026-04-14 11:28:26 |
+|      2 |    2 | Good              |      20000 |      20000 | 2026-04-14 11:28:26 |
+|      3 |    3 | Average           |      22000 |      22000 | 2026-04-14 11:28:26 |
+|      4 |    4 | Needs Improvement |      18000 |      18000 | 2026-04-14 11:28:26 |
++--------+------+-------------------+------------+------------+---------------------+
+4 rows in set (0.00 sec)
+
+mysql>
+
+Project: Digital Tax Filing System
+
+mysql> use smarttaxsystem;
+Database changed
+mysql> INSERT INTO user_login (first_name, last_name, username, password_hash, role) VALUES
+    -> ('Amit', 'Sharma', 'amit123', 'pass1', 'taxpayer'),
+    -> ('Neha', 'Patil', 'neha123', 'pass2', 'taxpayer'),
+    -> ('Raj', 'Verma', 'raj123', 'pass3', 'taxpayer'),
+    -> ('Simran', 'Kaur', 'simran123', 'pass4', 'taxpayer');
+Query OK, 4 rows affected (0.01 sec)
+Records: 4  Duplicates: 0  Warnings: 0
+
+mysql> INSERT INTO taxpayer_profile (user_id, pan_number, city, state) VALUES
+    -> (1, 'PAN001', 'Pune', 'MH'),
+    -> (2, 'PAN002', 'Mumbai', 'MH'),
+    -> (3, 'PAN003', 'Delhi', 'DL'),
+    -> (4, 'PAN004', 'Chennai', 'TN');
+Query OK, 4 rows affected (0.01 sec)
+Records: 4  Duplicates: 0  Warnings: 0
+
+mysql> INSERT INTO income_sources (taxpayer_id, source_type, amount, financial_year) VALUES
+    -> (1, 'Salary', 600000, '2024-25'),
+    -> (2, 'Business', 300000, '2024-25'),
+    -> (3, 'Salary', 800000, '2024-25'),
+    -> (4, 'Freelance', 200000, '2024-25');
+Query OK, 4 rows affected (0.01 sec)
+Records: 4  Duplicates: 0  Warnings: 0
+
+mysql> INSERT INTO deductions (taxpayer_id, deduction_type, amount, financial_year) VALUES
+    -> (1, '80C', 50000, '2024-25'),
+    -> (2, '80D', 20000, '2024-25'),
+    -> (3, '80C', 60000, '2024-25'),
+    -> (4, '80G', 10000, '2024-25');
+Query OK, 4 rows affected (0.01 sec)
+Records: 4  Duplicates: 0  Warnings: 0
+
+mysql> SELECT * FROM user_login;
++---------+------------+-----------+-----------+---------------+----------+---------------------+-----------------+--------------+
+| user_id | first_name | last_name | username  | password_hash | role     | created_at          | failed_attempts | locked_until |
++---------+------------+-----------+-----------+---------------+----------+---------------------+-----------------+--------------+
+|       1 | Amit       | Sharma    | amit123   | pass1         | taxpayer | 2026-04-14 11:36:40 |               0 | NULL         |
+|       2 | Neha       | Patil     | neha123   | pass2         | taxpayer | 2026-04-14 11:36:40 |               0 | NULL         |
+|       3 | Raj        | Verma     | raj123    | pass3         | taxpayer | 2026-04-14 11:36:40 |               0 | NULL         |
+|       4 | Simran     | Kaur      | simran123 | pass4         | taxpayer | 2026-04-14 11:36:40 |               0 | NULL         |
++---------+------------+-----------+-----------+---------------+----------+---------------------+-----------------+--------------+
+4 rows in set (0.00 sec)
+
+mysql> SELECT * FROM taxpayer_profile;
++-------------+---------+------------+---------+------+-------+-------+---------+---------+-------+------+
+| taxpayer_id | user_id | pan_number | aadhaar | dob  | email | phone | address | city    | state | pin  |
++-------------+---------+------------+---------+------+-------+-------+---------+---------+-------+------+
+|           1 |       1 | PAN001     | NULL    | NULL | NULL  | NULL  | NULL    | Pune    | MH    | NULL |
+|           2 |       2 | PAN002     | NULL    | NULL | NULL  | NULL  | NULL    | Mumbai  | MH    | NULL |
+|           3 |       3 | PAN003     | NULL    | NULL | NULL  | NULL  | NULL    | Delhi   | DL    | NULL |
+|           4 |       4 | PAN004     | NULL    | NULL | NULL  | NULL  | NULL    | Chennai | TN    | NULL |
++-------------+---------+------------+---------+------+-------+-------+---------+---------+-------+------+
+4 rows in set (0.00 sec)
+
+mysql> SELECT * FROM income_sources;
++-----------+-------------+-------------+-----------+----------------+---------------------+
+| income_id | taxpayer_id | source_type | amount    | financial_year | created_at          |
++-----------+-------------+-------------+-----------+----------------+---------------------+
+|         1 |           1 | Salary      | 600000.00 | 2024-25        | 2026-04-14 11:37:01 |
+|         2 |           2 | Business    | 300000.00 | 2024-25        | 2026-04-14 11:37:01 |
+|         3 |           3 | Salary      | 800000.00 | 2024-25        | 2026-04-14 11:37:01 |
+|         4 |           4 | Freelance   | 200000.00 | 2024-25        | 2026-04-14 11:37:01 |
++-----------+-------------+-------------+-----------+----------------+---------------------+
+4 rows in set (0.00 sec)
+
+mysql> DELIMITER $$
+mysql>
+mysql> CREATE PROCEDURE Tax_Calculation_Cursor()
+    -> BEGIN
+    ->     DECLARE done INT DEFAULT 0;
+    ->     DECLARE v_taxpayer BIGINT;
+    ->     DECLARE v_income DECIMAL(15,2);
+    ->     DECLARE v_tax DECIMAL(15,2);
+    ->     DECLARE total_tax DECIMAL(15,2) DEFAULT 0;
+    ->
+    ->     DECLARE tax_cursor CURSOR FOR
+    ->         SELECT taxpayer_id, SUM(amount)
+    ->         FROM income_sources
+    ->         GROUP BY taxpayer_id;
+    ->
+    ->     DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
+    ->
+    ->     DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    ->     BEGIN
+    ->         SELECT 'Error in tax calculation' AS Message;
+    ->     END;
+    ->
+    ->     OPEN tax_cursor;
+    ->
+    ->     read_loop: LOOP
+    ->         FETCH tax_cursor INTO v_taxpayer, v_income;
+    ->
+    ->         IF done = 1 THEN
+    ->             LEAVE read_loop;
+    ->         END IF;
+    ->
+    ->         IF v_income > 500000 THEN
+    ->             SET v_tax = v_income * 0.10;
+    ->
+    ->             SET total_tax = total_tax + v_tax;
+    ->
+    ->             INSERT INTO audit_logs(user_id, action, status, details)
+    ->             VALUES (v_taxpayer, 'TAX_CALCULATION', 'SUCCESS',
+    ->                     CONCAT('Tax: ', v_tax, ', Total: ', total_tax));
+    ->         END IF;
+    ->
+    ->     END LOOP;
+    ->
+    ->     CLOSE tax_cursor;
+    -> END$$
+ERROR 1304 (42000): PROCEDURE Tax_Calculation_Cursor already exists
+mysql>
+mysql> DELIMITER ;
+mysql> CALL Tax_Calculation_Cursor();
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> SELECT * FROM audit_logs;
++--------+---------+-------+-----------------+---------+---------------------------------+------------+---------------------+
+| log_id | user_id | email | action          | status  | details                         | ip_address | created_at          |
++--------+---------+-------+-----------------+---------+---------------------------------+------------+---------------------+
+|      1 |       1 | NULL  | TAX_CALCULATION | SUCCESS | Tax: 60000.00, Total: 60000.00  | NULL       | 2026-04-14 11:37:52 |
+|      2 |       3 | NULL  | TAX_CALCULATION | SUCCESS | Tax: 80000.00, Total: 140000.00 | NULL       | 2026-04-14 11:37:52 |
++--------+---------+-------+-----------------+---------+---------------------------------+------------+---------------------+
