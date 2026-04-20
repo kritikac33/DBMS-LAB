@@ -1,0 +1,309 @@
+mysql> CREATE DATABASE Employee_Appraisal;
+Query OK, 1 row affected (0.02 sec)
+
+mysql> USE Employee_Appraisal;
+Database changed
+mysql> CREATE TABLE Department (
+    ->     Dept_ID INT PRIMARY KEY,
+    ->     Dept_Name VARCHAR(50)
+    -> );
+Query OK, 0 rows affected (0.07 sec)
+
+mysql> CREATE TABLE Employee (
+    ->     Emp_ID INT PRIMARY KEY,
+    ->     Emp_Name VARCHAR(100),
+    ->     Salary DECIMAL(10,2),
+    ->     Dept_ID INT,
+    ->     FOREIGN KEY (Dept_ID) REFERENCES Department(Dept_ID)
+    -> );
+Query OK, 0 rows affected (0.04 sec)
+
+mysql> CREATE TABLE Appraisal (
+    ->     Appraisal_ID INT PRIMARY KEY,
+    ->     Emp_ID INT,
+    ->     Rating INT,
+    ->     Bonus DECIMAL(10,2),
+    ->     FOREIGN KEY (Emp_ID) REFERENCES Employee(Emp_ID)
+    -> );
+Query OK, 0 rows affected (0.04 sec)
+
+mysql> INSERT INTO Department VALUES
+    -> (1, 'HR'),
+    -> (2, 'IT'),
+    -> (3, 'Finance'),
+    -> (4, 'Marketing'),
+    -> (5, 'Sales'),
+    -> (6, 'Admin'),
+    -> (7, 'Support');
+Query OK, 7 rows affected (0.03 sec)
+Records: 7  Duplicates: 0  Warnings: 0
+
+mysql> INSERT INTO Employee VALUES
+    -> (101, 'Alice', 50000, 1),
+    -> (102, 'Bob', 60000, 2),
+    -> (103, 'Charlie', 55000, 3),
+    -> (104, 'David', 70000, 2),
+    -> (105, 'Eva', 65000, 4),
+    -> (106, 'Frank', 48000, 5),
+    -> (107, 'Grace', 72000, 2),
+    -> (108, 'Hannah', 53000, 6);
+Query OK, 8 rows affected (0.01 sec)
+Records: 8  Duplicates: 0  Warnings: 0
+
+mysql> INSERT INTO Appraisal VALUES
+    -> (1, 101, 4, 5000),
+    -> (2, 102, 5, 8000),
+    -> (3, 103, 3, 3000),
+    -> (4, 104, 5, 9000),
+    -> (5, 105, 4, 6000),
+    -> (6, 106, 2, 2000),
+    -> (7, 107, 5, 10000),
+    -> (8, 108, 3, 3500);
+Query OK, 8 rows affected (0.01 sec)
+Records: 8  Duplicates: 0  Warnings: 0
+
+mysql> SELECT E.Emp_Name, D.Dept_Name
+    -> FROM Employee E
+    -> INNER JOIN Department D ON E.Dept_ID = D.Dept_ID;
++----------+-----------+
+| Emp_Name | Dept_Name |
++----------+-----------+
+| Alice    | HR        |
+| Bob      | IT        |
+| David    | IT        |
+| Grace    | IT        |
+| Charlie  | Finance   |
+| Eva      | Marketing |
+| Frank    | Sales     |
+| Hannah   | Admin     |
++----------+-----------+
+8 rows in set (0.01 sec)
+
+mysql> SELECT E.Emp_Name, D.Dept_Name
+    -> FROM Employee E
+    -> LEFT JOIN Department D ON E.Dept_ID = D.Dept_ID;
++----------+-----------+
+| Emp_Name | Dept_Name |
++----------+-----------+
+| Alice    | HR        |
+| Bob      | IT        |
+| Charlie  | Finance   |
+| David    | IT        |
+| Eva      | Marketing |
+| Frank    | Sales     |
+| Grace    | IT        |
+| Hannah   | Admin     |
++----------+-----------+
+8 rows in set (0.01 sec)
+
+mysql> SELECT E.Emp_Name, D.Dept_Name
+    -> FROM Employee E
+    -> RIGHT JOIN Department D ON E.Dept_ID = D.Dept_ID;
++----------+-----------+
+| Emp_Name | Dept_Name |
++----------+-----------+
+| Alice    | HR        |
+| Bob      | IT        |
+| David    | IT        |
+| Grace    | IT        |
+| Charlie  | Finance   |
+| Eva      | Marketing |
+| Frank    | Sales     |
+| Hannah   | Admin     |
+| NULL     | Support   |
++----------+-----------+
+9 rows in set (0.00 sec)
+
+mysql> SELECT E.Emp_Name, D.Dept_Name
+    -> FROM Employee E
+    -> LEFT JOIN Department D ON E.Dept_ID = D.Dept_ID
+    -> UNION
+    -> SELECT E.Emp_Name, D.Dept_Name
+    -> FROM Employee E
+    -> RIGHT JOIN Department D ON E.Dept_ID = D.Dept_ID;
++----------+-----------+
+| Emp_Name | Dept_Name |
++----------+-----------+
+| Alice    | HR        |
+| Bob      | IT        |
+| Charlie  | Finance   |
+| David    | IT        |
+| Eva      | Marketing |
+| Frank    | Sales     |
+| Grace    | IT        |
+| Hannah   | Admin     |
+| NULL     | Support   |
++----------+-----------+
+9 rows in set (0.01 sec)
+
+mysql> SELECT E.Emp_Name, A.Rating, A.Bonus
+    -> FROM Employee E
+    -> JOIN Appraisal A ON E.Emp_ID = A.Emp_ID;
++----------+--------+----------+
+| Emp_Name | Rating | Bonus    |
++----------+--------+----------+
+| Alice    |      4 |  5000.00 |
+| Bob      |      5 |  8000.00 |
+| Charlie  |      3 |  3000.00 |
+| David    |      5 |  9000.00 |
+| Eva      |      4 |  6000.00 |
+| Frank    |      2 |  2000.00 |
+| Grace    |      5 | 10000.00 |
+| Hannah   |      3 |  3500.00 |
++----------+--------+----------+
+8 rows in set (0.00 sec)
+
+mysql> SELECT Emp_Name, Salary
+    -> FROM Employee
+    -> WHERE Salary = (SELECT MAX(Salary) FROM Employee);
++----------+----------+
+| Emp_Name | Salary   |
++----------+----------+
+| Grace    | 72000.00 |
++----------+----------+
+1 row in set (0.01 sec)
+
+mysql> SELECT Emp_Name, Salary
+    -> FROM Employee
+    -> WHERE Salary > (SELECT AVG(Salary) FROM Employee);
++----------+----------+
+| Emp_Name | Salary   |
++----------+----------+
+| Bob      | 60000.00 |
+| David    | 70000.00 |
+| Eva      | 65000.00 |
+| Grace    | 72000.00 |
++----------+----------+
+4 rows in set (0.00 sec)
+
+mysql> SELECT Emp_Name
+    -> FROM Employee
+    -> WHERE Dept_ID = (
+    ->     SELECT Dept_ID FROM Department WHERE Dept_Name = 'IT'
+    -> );
++----------+
+| Emp_Name |
++----------+
+| Bob      |
+| David    |
+| Grace    |
++----------+
+3 rows in set (0.01 sec)
+
+mysql> SELECT Dept_Name
+    -> FROM Department
+    -> WHERE Dept_ID NOT IN (SELECT Dept_ID FROM Employee);
++-----------+
+| Dept_Name |
++-----------+
+| Support   |
++-----------+
+1 row in set (0.01 sec)
+
+mysql> SELECT Emp_Name
+    -> FROM Employee
+    -> WHERE Emp_ID IN (
+    ->     SELECT Emp_ID FROM Appraisal WHERE Rating = 5
+    -> );
++----------+
+| Emp_Name |
++----------+
+| Bob      |
+| David    |
+| Grace    |
++----------+
+3 rows in set (0.00 sec)
+
+mysql> SELECT Emp_Name, Salary
+    -> FROM Employee E1
+    -> WHERE Salary > (
+    ->     SELECT AVG(Salary)
+    ->     FROM Employee E2
+    ->     WHERE E1.Dept_ID = E2.Dept_ID
+    -> );
++----------+----------+
+| Emp_Name | Salary   |
++----------+----------+
+| David    | 70000.00 |
+| Grace    | 72000.00 |
++----------+----------+
+2 rows in set (0.00 sec)
+
+mysql> SELECT D.Dept_Name, SUM(E.Salary) AS Total_Salary
+    -> FROM Employee E
+    -> JOIN Department D ON E.Dept_ID = D.Dept_ID
+    -> GROUP BY D.Dept_Name;
++-----------+--------------+
+| Dept_Name | Total_Salary |
++-----------+--------------+
+| HR        |     50000.00 |
+| IT        |    202000.00 |
+| Finance   |     55000.00 |
+| Marketing |     65000.00 |
+| Sales     |     48000.00 |
+| Admin     |     53000.00 |
++-----------+--------------+
+6 rows in set (0.01 sec)
+
+mysql> SELECT D.Dept_Name, AVG(E.Salary) AS Avg_Salary
+    -> FROM Employee E
+    -> JOIN Department D ON E.Dept_ID = D.Dept_ID
+    -> GROUP BY D.Dept_Name;
++-----------+--------------+
+| Dept_Name | Avg_Salary   |
++-----------+--------------+
+| HR        | 50000.000000 |
+| IT        | 67333.333333 |
+| Finance   | 55000.000000 |
+| Marketing | 65000.000000 |
+| Sales     | 48000.000000 |
+| Admin     | 53000.000000 |
++-----------+--------------+
+6 rows in set (0.01 sec)
+
+mysql> SELECT D.Dept_Name, AVG(E.Salary) AS Avg_Salary
+    -> FROM Employee E
+    -> JOIN Department D ON E.Dept_ID = D.Dept_ID
+    -> GROUP BY D.Dept_Name
+    -> HAVING AVG(E.Salary) > 60000;
++-----------+--------------+
+| Dept_Name | Avg_Salary   |
++-----------+--------------+
+| IT        | 67333.333333 |
+| Marketing | 65000.000000 |
++-----------+--------------+
+2 rows in set (0.01 sec)
+
+mysql> SELECT D.Dept_Name, SUM(E.Salary) AS Total_Salary
+    -> FROM Employee E
+    -> JOIN Department D ON E.Dept_ID = D.Dept_ID
+    -> GROUP BY D.Dept_Name
+    -> HAVING SUM(E.Salary) > 100000;
++-----------+--------------+
+| Dept_Name | Total_Salary |
++-----------+--------------+
+| IT        |    202000.00 |
++-----------+--------------+
+1 row in set (0.00 sec)
+
+mysql> CREATE VIEW Employee_Appraisal_View AS
+    -> SELECT E.Emp_Name, D.Dept_Name, A.Rating, A.Bonus
+    -> FROM Employee E
+    -> JOIN Department D ON E.Dept_ID = D.Dept_ID
+    -> JOIN Appraisal A ON E.Emp_ID = A.Emp_ID;
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> SELECT * FROM Employee_Appraisal_View;
++----------+-----------+--------+----------+
+| Emp_Name | Dept_Name | Rating | Bonus    |
++----------+-----------+--------+----------+
+| Alice    | HR        |      4 |  5000.00 |
+| Bob      | IT        |      5 |  8000.00 |
+| Charlie  | Finance   |      3 |  3000.00 |
+| David    | IT        |      5 |  9000.00 |
+| Eva      | Marketing |      4 |  6000.00 |
+| Frank    | Sales     |      2 |  2000.00 |
+| Grace    | IT        |      5 | 10000.00 |
+| Hannah   | Admin     |      3 |  3500.00 |
++----------+-----------+--------+----------+
+8 rows in set (0.01 sec)
